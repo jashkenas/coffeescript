@@ -918,36 +918,38 @@ test "#3926: implicit object in parameter list", ->
   '''
 
 test "#4130: unassignable in destructured param", ->
+  # This is an error because '@param' is being dereferenced. This would work as a computed property
+  # name, e.g. '({[@param]: x}) ->', but not with null.
   assertErrorFormat '''
     fun = ({
       @param : null
     }) ->
       console.log "Oh hello!"
   ''', '''
-    [stdin]:2:12: error: keyword 'null' can't be assigned
+    [stdin]:2:10: error: unexpected :
       @param : null
-               ^^^^
+             ^
   '''
   assertErrorFormat '''
     ({a: null}) ->
   ''', '''
-    [stdin]:1:6: error: keyword 'null' can't be assigned
+    [stdin]:1:6: error: unexpected null
     ({a: null}) ->
          ^^^^
   '''
   assertErrorFormat '''
     ({a: 1}) ->
   ''', '''
-    [stdin]:1:6: error: '1' can't be assigned
+    [stdin]:1:6: error: unexpected number
     ({a: 1}) ->
          ^
   '''
   assertErrorFormat '''
     ({1}) ->
   ''', '''
-    [stdin]:1:3: error: '1' can't be assigned
+    [stdin]:1:4: error: unexpected }
     ({1}) ->
-      ^
+       ^
   '''
   assertErrorFormat '''
     ({a: true = 1}) ->
@@ -955,6 +957,100 @@ test "#4130: unassignable in destructured param", ->
     [stdin]:1:6: error: keyword 'true' can't be assigned
     ({a: true = 1}) ->
          ^^^^
+  '''
+
+test "parse time errors for invalid function parameter destructuring", ->
+  # Any attempt to provide a computed name binding in a function param destructuring for an object
+  # argument produces broken js code:
+###
+; (coffee -c -b -s --no-header | node) <<EOF
+f = ({[a]}) ->
+f {}
+EOF
+[stdin]:3
+f = function({[a]: a}) {};
+               ^
+
+ReferenceError: Cannot access 'a' before initialization
+# ...
+  ###
+  # In this case, the computed property binding is actually valid (we have added a test case for
+  # this), but the implicit generation of ': a' from '[a]' is absolutely not! When the method f is
+  # executed, the destructuring '({[a]: a})' will try to read 'a' as a value within the function
+  # environment, and will error as above.
+  assertErrorFormat '''
+    ({[a]}) ->
+  ''', '''
+    [stdin]:1:6: error: unexpected }
+    ({[a]}) ->
+         ^
+  '''
+
+  ###
+# Prior miscompiles (before this commit) from failing to sufficiently differentiate value vs place
+# expressions in function params (different than LHS of assignment--cannot assign to existing
+# values except this-properties e.g. `@x`).
+
+; coffee -c -b -s --no-header <<EOF
+({a: (x)}) -> x
+EOF
+# (function(arg) {
+#   var arg, x;
+#   x = arg.undefined;
+# });
+
+; coffee -c -b -s --no-header <<EOF
+({["x"]}) -> x
+EOF
+# (function({["x"]: "x"}) {
+#   return x;
+# });
+
+; coffee -c -b -s --no-header <<EOF
+([x[1]]) -> x
+EOF
+# (function([x[1]]) {
+#   return x;
+# });
+
+# This is an ICE!
+; coffee -c -b -s --no-header <<EOF
+({x: x[1]}) -> x
+EOF
+# TypeError: Cannot read properties of undefined (reading 'value')
+#     at atParam (.../lib/coffeescript/nodes.js:6543:54)
+# ...
+  ###
+  assertErrorFormat '''
+    ({a: (x)}) ->
+  ''', '''
+    [stdin]:1:6: error: unexpected (
+    ({a: (x)}) ->
+         ^
+  '''
+
+  assertErrorFormat '''
+    ({["x"]}) ->
+  ''', '''
+    [stdin]:1:8: error: unexpected }
+    ({["x"]}) ->
+           ^
+  '''
+
+  assertErrorFormat '''
+    ([x[1]]) ->
+  ''', '''
+    [stdin]:1:4: error: unexpected [
+    ([x[1]]) ->
+       ^
+  '''
+
+  assertErrorFormat '''
+    ({x: x[1]}) ->
+  ''', '''
+    [stdin]:1:7: error: unexpected [
+    ({x: x[1]}) ->
+          ^
   '''
 
 test "`yield` outside of a function", ->
