@@ -27,6 +27,7 @@
     "bin",
     "lib",
     "register.js",
+    "loader.mjs",
     "repl.js"
   ],
   "scripts": {
